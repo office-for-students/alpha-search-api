@@ -1,0 +1,75 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "WSj2jaJp2epEer5qSp1QnTCJuTg=",
+			"path": "github.com/ONSdigital/go-ns/common",
+			"revision": "38cc63eaa5e94ba6397e740ebbf81b10d9c2373a",
+			"revisionTime": "2018-08-03T12:52:05Z"
+		},
+		{
+			"checksumSHA1": "Vjyl/gfY0qx2lW9te3Ieb5HV3/s=",
+			"path": "github.com/ONSdigital/go-ns/handlers/requestID",
+			"revision": "38cc63eaa5e94ba6397e740ebbf81b10d9c2373a",
+			"revisionTime": "2018-08-03T12:52:05Z"
+		},
+		{
+			"checksumSHA1": "g9flYl+PBs6cYflFY3EpG6IcJGM=",
+			"path": "github.com/ONSdigital/go-ns/log",
+			"revision": "38cc63eaa5e94ba6397e740ebbf81b10d9c2373a",
+			"revisionTime": "2018-08-03T12:52:05Z"
+		},
+		{
+			"checksumSHA1": "GQdzMpAMb42KQQ/GsJFSRU5dj1Y=",
+			"path": "github.com/ONSdigital/go-ns/server",
+			"revision": "38cc63eaa5e94ba6397e740ebbf81b10d9c2373a",
+			"revisionTime": "2018-08-03T12:52:05Z"
+		},
+		{
+			"checksumSHA1": "g/V4qrXjUGG9B+e3hB+4NAYJ5Gs=",
+			"path": "github.com/gorilla/context",
+			"revision": "08b5f424b9271eedf6f9f0ce86cb9396ed337a42",
+			"revisionTime": "2016-08-17T18:46:32Z"
+		},
+		{
+			"checksumSHA1": "Aw8z8w/d+EFt8XCUYPjzSe0bPrU=",
+			"path": "github.com/gorilla/mux",
+			"revision": "cb4698366aa625048f3b815af6a0dea8aef9280a",
+			"revisionTime": "2018-06-05T21:15:56Z"
+		},
+		{
+			"checksumSHA1": "OBvAHqWjdI4NQVAqTkcQAdTuCFY=",
+			"origin": "github.com/ONSdigital/go-ns/vendor/github.com/justinas/alice",
+			"path": "github.com/justinas/alice",
+			"revision": "38cc63eaa5e94ba6397e740ebbf81b10d9c2373a",
+			"revisionTime": "2018-08-03T12:52:05Z"
+		},
+		{
+			"checksumSHA1": "Jrjxy16tD9mUgr/jbhXwbHVeSa0=",
+			"path": "github.com/kelseyhightower/envconfig",
+			"revision": "462fda1f11d8cad3660e52737b8beefd27acfb3f",
+			"revisionTime": "2017-09-18T16:15:10Z"
+		},
+		{
+			"checksumSHA1": "hBgLmZ/4mCxmnH88mqFKBkpJFUY=",
+			"origin": "github.com/ONSdigital/go-ns/vendor/github.com/mgutz/ansi",
+			"path": "github.com/mgutz/ansi",
+			"revision": "38cc63eaa5e94ba6397e740ebbf81b10d9c2373a",
+			"revisionTime": "2018-08-03T12:52:05Z"
+		},
+		{
+			"checksumSHA1": "18YrywDvb67HU8xYF5vqKMgelx0=",
+			"path": "github.com/pkg/errors",
+			"revision": "c059e472caf75dbe73903f6521a20abac245b17f",
+			"revisionTime": "2018-09-11T06:21:13Z"
+		},
+		{
+			"checksumSHA1": "iy7TNc01LWFOGwRwD6v0iDRqtLU=",
+			"path": "github.com/smartystreets/go-aws-auth",
+			"revision": "8ef1316913ee4f44bc48c2456e44a5c1c68ea53b",
+			"revisionTime": "2017-05-04T20:50:21Z"
+		}
+	],
+	"rootPath": "github.com/ofs/alpha-search-api"
+}
