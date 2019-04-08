@@ -179,10 +179,10 @@ func buildSearchQuery(term string, limit, offset int) *Body {
 	var object Object
 	highlight := make(map[string]Object)
 
-	highlight["kis_course_id"] = object
-	highlight["english_title"] = object
-	highlight["welsh_title"] = object
-	highlight["institution.public_ukprn_name"] = object
+	highlight["doc.kis_course_id"] = object
+	highlight["doc.english_title"] = object
+	highlight["doc.welsh_title"] = object
+	highlight["doc.institution.public_ukprn_name"] = object
 
 	courseID := make(map[string]string)
 	englishTitle := make(map[string]string)

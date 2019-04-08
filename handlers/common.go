@@ -8,9 +8,9 @@ import (
 	"net/http"
 
 	"github.com/ONSdigital/go-ns/log"
-	"github.com/ofs/alpha-dataset-api/models"
 	errs "github.com/ofs/alpha-search-api/apierrors"
 	elastic "github.com/ofs/alpha-search-api/elasticsearch"
+	"github.com/ofs/alpha-search-api/models"
 	"github.com/pkg/errors"
 )
 
