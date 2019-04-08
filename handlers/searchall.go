@@ -95,7 +95,7 @@ func (api *API) AllSearch(w http.ResponseWriter, r *http.Request) {
 
 		result = getSnippets(ctx, result)
 
-		doc := result.Source
+		doc := result.Source.Doc
 		searchResults.Items = append(searchResults.Items, doc)
 		count++
 	}
