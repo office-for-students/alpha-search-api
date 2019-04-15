@@ -34,8 +34,8 @@ type Highlight struct {
 	InstitutionName []string `json:"institution_public_name,omitempty"`
 }
 
-// SearchResults represents a structure for a list of returned objects
-type SearchResults struct {
+// CoursesSearchResults represents a structure for a list of returned objects
+type CoursesSearchResults struct {
 	Count  int        `json:"count"`
 	Items  []Document `json:"items"`
 	Limit  int        `json:"limit"`
@@ -60,23 +60,8 @@ type Document struct {
 	Mode             string          `json:"mode"`
 	NHSFunded        string          `json:"nhs_funded,omitempty"`
 	Qualification    *Qualification  `json:"qualification,omitempty"`
-	NumberOfChildren int             `json:"number_of_children"`
 	SandwichYear     string          `json:"sandwich_year,omitempty"`
 	YearAbroad       string          `json:"year_abroad,omitempty"`
-}
-
-// Institution represents institution data of a single item in returned list
-type Institution struct {
-	PublicUKPRN     string `json:"public_ukprn"`
-	PublicUKPRNName string `json:"public_ukprn_name"`
-	UKPRN           string `json:"ukprn"`
-	UKPRNName       string `json:"ukprn_name"`
-}
-
-// LocationObject represents location data of a single item in returned list
-type LocationObject struct {
-	Latitude  string `json:"latitude"`
-	Longitude string `json:"longitude"`
 }
 
 // Matches represents a list of members and their arrays of character offsets that matched the search term
@@ -85,14 +70,6 @@ type Matches struct {
 	EnglishTitle    []Snippet `json:"english_title,omitempty"`
 	WelshTitle      []Snippet `json:"welsh_title,omitempty"`
 	InstitutionName []Snippet `json:"institution.public_ukprn_name,omitempty"`
-}
-
-// Qualification represents the qualification data of a single item in returned list
-type Qualification struct {
-	Code  string `json:"code,omitempty"`
-	Label string `json:"label,omitempty"`
-	Level string `json:"level,omitempty"`
-	Name  string `json:"name,omitempty"`
 }
 
 // Snippet represents a pair of integers defining the start and end of a substring in the member that matched the search term

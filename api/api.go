@@ -7,8 +7,6 @@ import (
 	"github.com/ONSdigital/go-ns/server"
 	"github.com/gorilla/mux"
 	"github.com/ofs/alpha-search-api/config"
-	"github.com/ofs/alpha-search-api/elasticsearch"
-	"github.com/ofs/alpha-search-api/handlers"
 )
 
 var (
@@ -16,13 +14,22 @@ var (
 	serverErrors chan error
 )
 
+// API provides an interface for the routes
+type API interface {
+	CreateSearchAPI(string, *mux.Router) *SearchAPI
+}
+
 // SearchAPI manages stored data
 type SearchAPI struct {
-	Router *mux.Router
+	DefaultMaxResults int
+	Elasticsearch     Elasticsearcher
+	Host              string
+	Index             string
+	Router            *mux.Router
 }
 
 // CreateSearchAPI manages all the routes configured to API
-func CreateSearchAPI(cfg config.Configuration, elasticsearch elasticsearch.Elasticsearcher, errorChan chan error) {
+func CreateSearchAPI(cfg config.Configuration, elasticsearch Elasticsearcher, errorChan chan error) {
 	router := mux.NewRouter()
 	Routes(cfg, elasticsearch, router)
 
@@ -41,16 +48,20 @@ func CreateSearchAPI(cfg config.Configuration, elasticsearch elasticsearch.Elast
 }
 
 // Routes represents a list of endpoints that exist with this api
-func Routes(cfg config.Configuration, elasticsearch elasticsearch.Elasticsearcher, router *mux.Router) *SearchAPI {
-
-	api := SearchAPI{
-		Router: router,
-	}
+func Routes(cfg config.Configuration, elasticsearch Elasticsearcher, router *mux.Router) *SearchAPI {
 
 	host := cfg.Host + cfg.BindAddr
 
-	routeConfig := handlers.API{Elasticsearch: elasticsearch, Index: cfg.ElasticSearchConfig.DestIndex, Host: host, DefaultMaxResults: cfg.DefaultMaxResults}
-	api.Router.HandleFunc("/search", routeConfig.AllSearch).Methods("GET")
+	api := SearchAPI{
+		DefaultMaxResults: cfg.DefaultMaxResults,
+		Elasticsearch:     elasticsearch,
+		Host:              host,
+		Index:             cfg.ElasticSearchConfig.DestIndex,
+		Router:            router,
+	}
+
+	api.Router.HandleFunc("/search/courses", api.SearchCourses).Methods("GET")
+	api.Router.HandleFunc("/search/institution-courses", api.SearchInstitutionCourses).Methods("GET")
 	return &api
 }
 

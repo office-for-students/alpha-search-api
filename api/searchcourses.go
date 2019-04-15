@@ -1,4 +1,4 @@
-package handlers
+package api
 
 import (
 	"context"
@@ -13,13 +13,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-const (
-	defaultLimit  = 20
-	defaultOffset = 0
-)
-
-// AllSearch retrieves a list of relevant results from search term
-func (api *API) AllSearch(w http.ResponseWriter, r *http.Request) {
+// SearchCourses retrieves a list of relevant results from search term
+func (api *SearchAPI) SearchCourses(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	ctx = context.WithValue(ctx, contextServiceName, searchAPI)
 	defer drainBody(ctx, r)
@@ -32,13 +27,13 @@ func (api *API) AllSearch(w http.ResponseWriter, r *http.Request) {
 
 	logData := log.Data{"api_config": api, "limit": requestedLimit, "offset": requestedOffset, "search_term": term}
 
-	log.InfoCtx(ctx, "AllSearch handler: attempting to get list of courses relevant to search term", logData)
+	log.InfoCtx(ctx, "SearchCourses handler: attempting to get list of courses relevant to search term", logData)
 
 	limit := defaultLimit
 	if requestedLimit != "" {
 		limit, err = strconv.Atoi(requestedLimit)
 		if err != nil {
-			log.ErrorCtx(ctx, errors.WithMessage(err, "getSearch endpoint: request limit parameter error"), logData)
+			log.ErrorCtx(ctx, errors.WithMessage(err, "search Courses endpoint: request limit parameter error"), logData)
 
 			Error(ctx, w, errs.ErrParsingQueryParameters)
 			return
@@ -49,7 +44,7 @@ func (api *API) AllSearch(w http.ResponseWriter, r *http.Request) {
 	if requestedOffset != "" {
 		offset, err = strconv.Atoi(requestedOffset)
 		if err != nil {
-			log.ErrorCtx(ctx, errors.WithMessage(err, "getSearch endpoint: request offset parameter error"), logData)
+			log.ErrorCtx(ctx, errors.WithMessage(err, "search Courses endpoint: request offset parameter error"), logData)
 
 			Error(ctx, w, errs.ErrParsingQueryParameters)
 			return
@@ -63,7 +58,7 @@ func (api *API) AllSearch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := page.ValidateQueryParameters(term); err != nil {
-		log.ErrorCtx(ctx, errors.WithMessage(err, "getSearch endpoint: failed query parameter validation"), logData)
+		log.ErrorCtx(ctx, errors.WithMessage(err, "search Courses endpoint: failed query parameter validation"), logData)
 
 		Error(ctx, w, err)
 		return
@@ -72,26 +67,24 @@ func (api *API) AllSearch(w http.ResponseWriter, r *http.Request) {
 	logData["limit"] = page.Limit
 	logData["offset"] = page.Offset
 
-	log.InfoCtx(ctx, "getSearch endpoint: just before querying search index", logData)
+	log.InfoCtx(ctx, "search Courses endpoint: just before querying search index", logData)
 	// Search for courses in elasticsearch
-	response, _, err := api.Elasticsearch.QuerySearchIndex(ctx, api.Index, term, page.Limit, page.Offset)
+	response, _, err := api.Elasticsearch.QueryCoursesSearch(ctx, api.Index, term, page.Limit, page.Offset)
 	if err != nil {
-		log.ErrorCtx(ctx, errors.WithMessage(err, "getSearch endpoint: failed to query elastic search index"), logData)
+		log.ErrorCtx(ctx, errors.WithMessage(err, "search Courses endpoint: failed to query elastic search index"), logData)
 
 		Error(ctx, w, err)
 		return
 	}
 
-	searchResults := &models.SearchResults{
+	searchResults := &models.CoursesSearchResults{
 		Count:  response.Hits.Total,
 		Limit:  page.Limit,
 		Offset: page.Offset,
 	}
 
-	log.Debug("about to loop the loop", nil)
 	count := 0
 	for _, result := range response.Hits.HitList {
-		log.Debug("got inside loop", log.Data{"count": count})
 
 		result = getSnippets(ctx, result)
 
@@ -104,13 +97,13 @@ func (api *API) AllSearch(w http.ResponseWriter, r *http.Request) {
 
 	b, err := json.Marshal(searchResults)
 	if err != nil {
-		log.ErrorCtx(ctx, errors.WithMessage(err, "getSearch endpoint: failed to marshal search resource into bytes"), logData)
+		log.ErrorCtx(ctx, errors.WithMessage(err, "search Courses endpoint: failed to marshal search resource into bytes"), logData)
 
 		Error(ctx, w, errs.ErrInternalServer)
 		return
 	}
 
-	log.InfoCtx(ctx, "AllSearch handler: successfully got list of course resources", logData)
+	log.InfoCtx(ctx, "SearchCourses handler: successfully got list of course resources", logData)
 	writeBody(ctx, w, b)
 }
 

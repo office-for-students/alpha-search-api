@@ -1,4 +1,4 @@
-package handlers
+package api
 
 import (
 	"context"
@@ -9,24 +9,18 @@ import (
 
 	"github.com/ONSdigital/go-ns/log"
 	errs "github.com/ofs/alpha-search-api/apierrors"
-	elastic "github.com/ofs/alpha-search-api/elasticsearch"
 	"github.com/ofs/alpha-search-api/models"
 	"github.com/pkg/errors"
 )
-
-// API represents the structure which holds information for the searchAPI handlers
-type API struct {
-	DefaultMaxResults int
-	Elasticsearch     elastic.Elasticsearcher
-	Host              string
-	Index             string
-}
 
 const (
 	// ContextServiceName represents the context key for the name of the service
 	contextServiceName = contextKey("service")
 	// searchAPI represents the alias name for the dataset API
 	searchAPI = "search"
+
+	defaultLimit  = 20
+	defaultOffset = 0
 )
 
 type contextKey string
