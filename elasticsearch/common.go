@@ -56,8 +56,27 @@ type Query struct {
 
 // Bool represents the desirable goals for query
 type Bool struct {
-	Must   []Match `json:"must,omitempty"`
-	Should []Match `json:"should,omitempty"`
+	Must   []Match   `json:"must,omitempty"`
+	Should []Match   `json:"should,omitempty"`
+	Filter []Filters `json:"filter,omitempty"`
+}
+
+// Filters represents a list of items that are filterable
+type Filters struct {
+	Terms Terms `json:"terms,omitempty"`
+}
+
+// Terms represents a list of terms that are filterable
+type Terms struct {
+	Country                 []string `json:"doc.country_code,omitempty"`
+	DistanceLearning        []string `json:"doc.distance_learning,omitempty"`
+	FoundationYearAvailable []string `json:"doc.foundation_year,omitempty"`
+	HonoursAward            []string `json:"doc.honours_award,omitempty"`
+	Institutions            []string `json:"doc.institution.ukprn_name,omitempty"`
+	LengthOfCourse          []string `json:"doc.length_of_course,omitempty"`
+	Mode                    []string `json:"doc.mode,omitempty"`
+	SandwichYear            []string `json:"doc.sandwich_year,omitempty"`
+	YearAbroad              []string `json:"doc.year_abroad,omitempty"`
 }
 
 // Match represents the fields that the term should or must match within query

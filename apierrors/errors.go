@@ -36,6 +36,7 @@ func (e *ErrorObject) Values() map[string]string {
 
 // A list of error messages for Dataset API
 var (
+	ErrBadFilter              = errors.New("bad filter term")
 	ErrCourseNotFound         = errors.New("course not found")
 	ErrIndexNotFound          = errors.New("search index not found")
 	ErrInstitutionNotFound    = errors.New("institution not found")

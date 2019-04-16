@@ -36,10 +36,11 @@ type Highlight struct {
 
 // CoursesSearchResults represents a structure for a list of returned objects
 type CoursesSearchResults struct {
-	Count  int        `json:"count"`
-	Items  []Document `json:"items"`
-	Limit  int        `json:"limit"`
-	Offset int        `json:"offset"`
+	TotalResults int        `json:"total_results"`
+	Count        int        `json:"count"`
+	Items        []Document `json:"items"`
+	Limit        int        `json:"limit"`
+	Offset       int        `json:"offset"`
 }
 
 // SearchResult represents data on a single item of search results
@@ -51,9 +52,12 @@ type SearchResult struct {
 type Document struct {
 	KISCourseID      string          `json:"kis_course_id"`
 	EnglishTitle     string          `json:"english_title"`
+	Country          string          `json:"country"`
 	DistanceLearning string          `json:"distance_learning,omitempty"`
 	FoundationYear   string          `json:"foundation_year"`
+	HonoursAward     string          `json:"honours_award"`
 	Institution      *Institution    `json:"institution"`
+	LengthOfCourse   string          `json:"length_of_course"`
 	Link             string          `json:"link"`
 	Location         *LocationObject `json:"location,omitempty"`
 	Matches          Matches         `json:"matches,omitempty"`

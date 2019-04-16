@@ -12,16 +12,16 @@ import (
 )
 
 // QueryCoursesSearch builds query as a json body to call an elasticsearch index with
-func (api *API) QueryCoursesSearch(ctx context.Context, index, term string, limit, offset int) (*models.SearchResponse, int, error) {
+func (api *API) QueryCoursesSearch(ctx context.Context, index, term string, limit, offset int, filters map[string]string, countries, lengthOfCourse, institutions []string) (*models.SearchResponse, int, error) {
 	response := &models.SearchResponse{}
 
 	path := api.url + "/" + index + "/_search"
 
-	logData := log.Data{"term": term, "path": path}
+	logData := log.Data{"term": term, "path": path, "filters": filters}
 
 	log.InfoCtx(ctx, "searching index", logData)
 
-	body := buildSearchQuery(term, limit, offset)
+	body := buildSearchQuery(term, limit, offset, filters, countries, lengthOfCourse, institutions)
 
 	log.InfoCtx(ctx, "searching index", log.Data{"query": body})
 
@@ -52,28 +52,18 @@ func (api *API) QueryCoursesSearch(ctx context.Context, index, term string, limi
 	return response, status, nil
 }
 
-func buildSearchQuery(term string, limit, offset int) *Body {
+func buildSearchQuery(term string, limit, offset int, filters map[string]string, countries, lengthOfCourse, institutions []string) *Body {
 	var object Object
 	highlight := make(map[string]Object)
 
-	highlight["doc.kis_course_id"] = object
 	highlight["doc.english_title"] = object
 	highlight["doc.welsh_title"] = object
-	highlight["doc.institution.public_ukprn_name"] = object
 
-	courseID := make(map[string]string)
 	englishTitle := make(map[string]string)
 	welshTitle := make(map[string]string)
-	institutionName := make(map[string]string)
 
-	courseID["doc.kis_course_id"] = term
 	englishTitle["doc.english_title"] = term
 	welshTitle["doc.welsh_title"] = term
-	institutionName["doc.institution.public_ukprn_name"] = term
-
-	courseIDMatch := Match{
-		Match: courseID,
-	}
 
 	englishTitleMatch := Match{
 		Match: englishTitle,
@@ -81,10 +71,6 @@ func buildSearchQuery(term string, limit, offset int) *Body {
 
 	welshTitleMatch := Match{
 		Match: welshTitle,
-	}
-
-	institutionNameMatch := Match{
-		Match: institutionName,
 	}
 
 	sortbyScore := Order{
@@ -104,15 +90,210 @@ func buildSearchQuery(term string, limit, offset int) *Body {
 		},
 		Query: Query{
 			Bool: Bool{
-				Should: []Match{
-					courseIDMatch,
+				Must: []Match{
 					englishTitleMatch,
+				},
+				Should: []Match{
 					welshTitleMatch,
-					institutionNameMatch,
 				},
 			},
 		},
 		Sort: sortOrders,
+	}
+
+	if len(filters) > 0 || len(countries) > 0 {
+		query.Query.Bool.Filter = []Filters{}
+	}
+
+	for key, value := range filters {
+
+		// Not working as expected?
+		if key == "distance_learning" {
+			if value == "true" {
+				query.Query.Bool.Filter = append(
+					query.Query.Bool.Filter,
+					Filters{
+						Terms: Terms{
+							DistanceLearning: []string{"1", "2"},
+						},
+					},
+				)
+			} else {
+				query.Query.Bool.Filter = append(
+					query.Query.Bool.Filter,
+					Filters{
+						Terms: Terms{
+							DistanceLearning: []string{"0", "2"},
+						},
+					},
+				)
+			}
+		}
+
+		if key == "foundation_year" {
+			if value == "true" {
+				query.Query.Bool.Filter = append(
+					query.Query.Bool.Filter,
+					Filters{
+						Terms: Terms{
+							FoundationYearAvailable: []string{"1", "2"},
+						},
+					},
+				)
+			} else {
+				query.Query.Bool.Filter = append(
+					query.Query.Bool.Filter,
+					Filters{
+						Terms: Terms{
+							FoundationYearAvailable: []string{"0", "1"},
+						},
+					},
+				)
+			}
+		}
+
+		if key == "honours_award" {
+			if value == "true" {
+				query.Query.Bool.Filter = append(
+					query.Query.Bool.Filter,
+					Filters{
+						Terms: Terms{
+							HonoursAward: []string{"1"},
+						},
+					},
+				)
+			} else {
+				query.Query.Bool.Filter = append(
+					query.Query.Bool.Filter,
+					Filters{
+						Terms: Terms{
+							HonoursAward: []string{"0"},
+						},
+					},
+				)
+			}
+		}
+
+		if key == "sandwich_year" {
+			if value == "true" {
+				query.Query.Bool.Filter = append(
+					query.Query.Bool.Filter,
+					Filters{
+						Terms: Terms{
+							SandwichYear: []string{"1", "2"},
+						},
+					},
+				)
+			} else {
+				query.Query.Bool.Filter = append(
+					query.Query.Bool.Filter,
+					Filters{
+						Terms: Terms{
+							SandwichYear: []string{"0", "1"},
+						},
+					},
+				)
+			}
+		}
+
+		if key == "year_abroad" {
+			if value == "true" {
+				query.Query.Bool.Filter = append(
+					query.Query.Bool.Filter,
+					Filters{
+						Terms: Terms{
+							YearAbroad: []string{"1", "2"},
+						},
+					},
+				)
+			} else {
+				query.Query.Bool.Filter = append(
+					query.Query.Bool.Filter,
+					Filters{
+						Terms: Terms{
+							YearAbroad: []string{"0", "1"},
+						},
+					},
+				)
+			}
+		}
+
+		if key == "part_time" {
+			if value == "true" {
+				query.Query.Bool.Filter = append(
+					query.Query.Bool.Filter,
+					Filters{
+						Terms: Terms{
+							Mode: []string{"2"},
+						},
+					},
+				)
+			} else {
+				query.Query.Bool.Filter = append(
+					query.Query.Bool.Filter,
+					Filters{
+						Terms: Terms{
+							Mode: []string{"1"},
+						},
+					},
+				)
+			}
+		}
+
+		if key == "full_time" {
+			if value == "true" {
+				query.Query.Bool.Filter = append(
+					query.Query.Bool.Filter,
+					Filters{
+						Terms: Terms{
+							Mode: []string{"1"},
+						},
+					},
+				)
+			} else {
+				query.Query.Bool.Filter = append(
+					query.Query.Bool.Filter,
+					Filters{
+						Terms: Terms{
+							Mode: []string{"2"},
+						},
+					},
+				)
+			}
+		}
+	}
+
+	if len(countries) > 0 {
+		query.Query.Bool.Filter = append(
+			query.Query.Bool.Filter,
+			Filters{
+				Terms: Terms{
+					Country: countries,
+				},
+			},
+		)
+	}
+
+	if len(lengthOfCourse) > 0 {
+		query.Query.Bool.Filter = append(
+			query.Query.Bool.Filter,
+			Filters{
+				Terms: Terms{
+					LengthOfCourse: lengthOfCourse,
+				},
+			},
+		)
+	}
+
+	if len(institutions) > 0 && institutions[0] != "" {
+		query.Query.Bool.Filter = append(
+			query.Query.Bool.Filter,
+			Filters{
+				Terms: Terms{
+					Institutions: institutions,
+				},
+			},
+		)
 	}
 
 	return query

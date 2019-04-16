@@ -22,6 +22,11 @@ func (api *SearchAPI) SearchCourses(w http.ResponseWriter, r *http.Request) {
 	var err error
 
 	term := r.FormValue("q")
+	filters := r.FormValue("filters")
+	countries := r.FormValue("countries")
+	lengthOfCourse := r.FormValue("length_of_course")
+	institutions := r.FormValue("institutions")
+
 	requestedLimit := r.FormValue("limit")
 	requestedOffset := r.FormValue("offset")
 
@@ -67,9 +72,47 @@ func (api *SearchAPI) SearchCourses(w http.ResponseWriter, r *http.Request) {
 	logData["limit"] = page.Limit
 	logData["offset"] = page.Offset
 
+	newFilters := make(map[string]string)
+	if filters != "" {
+		// Validate filters
+		newFilters, err = models.ValidateFilters(filters)
+		if err != nil {
+			log.ErrorCtx(ctx, errors.WithMessage(err, "search Courses endpoint: failed filter validation"), logData)
+
+			Error(ctx, w, err)
+			return
+		}
+	}
+
+	var newCountries []string
+	if countries != "" {
+		// Validate filter by countries
+		newCountries, err = models.ValidateCountries(countries)
+		if err != nil {
+			log.ErrorCtx(ctx, errors.WithMessage(err, "search Courses endpoint: failed validation on country filters"), logData)
+
+			Error(ctx, w, err)
+			return
+		}
+	}
+
+	var newLengthOfCourse []string
+	if lengthOfCourse != "" {
+		// Validate filter by length of course
+		newLengthOfCourse, err = models.ValidateLengthOfCourse(lengthOfCourse)
+		if err != nil {
+			log.ErrorCtx(ctx, errors.WithMessage(err, "search Courses endpoint: failed validation on length of course filters"), logData)
+
+			Error(ctx, w, err)
+			return
+		}
+	}
+
+	institutionList := strings.Split(institutions, ",")
+
 	log.InfoCtx(ctx, "search Courses endpoint: just before querying search index", logData)
 	// Search for courses in elasticsearch
-	response, _, err := api.Elasticsearch.QueryCoursesSearch(ctx, api.Index, term, page.Limit, page.Offset)
+	response, _, err := api.Elasticsearch.QueryCoursesSearch(ctx, api.Index, term, page.Limit, page.Offset, newFilters, newCountries, newLengthOfCourse, institutionList)
 	if err != nil {
 		log.ErrorCtx(ctx, errors.WithMessage(err, "search Courses endpoint: failed to query elastic search index"), logData)
 
@@ -78,19 +121,17 @@ func (api *SearchAPI) SearchCourses(w http.ResponseWriter, r *http.Request) {
 	}
 
 	searchResults := &models.CoursesSearchResults{
-		Count:  response.Hits.Total,
-		Limit:  page.Limit,
-		Offset: page.Offset,
+		TotalResults: response.Hits.Total,
+		Limit:        page.Limit,
+		Offset:       page.Offset,
 	}
 
-	count := 0
 	for _, result := range response.Hits.HitList {
 
 		result = getSnippets(ctx, result)
 
 		doc := result.Source.Doc
 		searchResults.Items = append(searchResults.Items, doc)
-		count++
 	}
 
 	searchResults.Count = len(searchResults.Items)
