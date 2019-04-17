@@ -90,13 +90,23 @@ type PageVariables struct {
 }
 
 // ValidateQueryParameters represents a model for validating query parameters
-func (page *PageVariables) ValidateQueryParameters(term string) error {
+func (page *PageVariables) ValidateQueryParameters(term string) []*ErrorObject {
+	var errorObjects []*ErrorObject
+
 	if term == "" {
-		return errs.ErrEmptySearchTerm
+		termErrorValue := make(map[string](string))
+		termErrorValue["q"] = term
+		errorObjects = append(errorObjects, &ErrorObject{Error: errs.ErrEmptySearchTerm.Error(), ErrorValues: termErrorValue})
 	}
 
 	if page.Offset >= page.DefaultMaxResults {
-		return ErrorMaximumOffsetReached(page.DefaultMaxResults)
+		pagingErrorValue := make(map[string](string))
+		pagingErrorValue["offset"] = strconv.Itoa(page.Offset)
+		errorObjects = append(errorObjects, &ErrorObject{Error: ErrorMaximumOffsetReached(page.DefaultMaxResults).Error(), ErrorValues: pagingErrorValue})
+	}
+
+	if errorObjects != nil {
+		return errorObjects
 	}
 
 	if page.Offset+page.Limit > page.DefaultMaxResults {

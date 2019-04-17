@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/ONSdigital/go-ns/log"
 	errs "github.com/ofs/alpha-search-api/apierrors"
+	"github.com/ofs/alpha-search-api/helpers"
 	"github.com/ofs/alpha-search-api/models"
 	"github.com/pkg/errors"
 )
@@ -34,26 +34,16 @@ func (api *SearchAPI) SearchCourses(w http.ResponseWriter, r *http.Request) {
 
 	log.InfoCtx(ctx, "SearchCourses handler: attempting to get list of courses relevant to search term", logData)
 
-	limit := defaultLimit
-	if requestedLimit != "" {
-		limit, err = strconv.Atoi(requestedLimit)
-		if err != nil {
-			log.ErrorCtx(ctx, errors.WithMessage(err, "search Courses endpoint: request limit parameter error"), logData)
+	var errorObjects []*models.ErrorObject
 
-			Error(ctx, w, errs.ErrParsingQueryParameters)
-			return
-		}
+	limit, err := helpers.CalculateLimit(ctx, defaultLimit, api.DefaultMaxResults, requestedLimit)
+	if err != nil {
+		errorObjects = append(errorObjects, &models.ErrorObject{Error: err.Error(), ErrorValues: err.(*errs.ErrorObject).Values()})
 	}
 
-	offset := defaultOffset
-	if requestedOffset != "" {
-		offset, err = strconv.Atoi(requestedOffset)
-		if err != nil {
-			log.ErrorCtx(ctx, errors.WithMessage(err, "search Courses endpoint: request offset parameter error"), logData)
-
-			Error(ctx, w, errs.ErrParsingQueryParameters)
-			return
-		}
+	offset, err := helpers.CalculateOffset(ctx, requestedOffset)
+	if err != nil {
+		errorObjects = append(errorObjects, &models.ErrorObject{Error: err.Error(), ErrorValues: err.(*errs.ErrorObject).Values()})
 	}
 
 	page := &models.PageVariables{
@@ -62,11 +52,8 @@ func (api *SearchAPI) SearchCourses(w http.ResponseWriter, r *http.Request) {
 		Offset:            offset,
 	}
 
-	if err := page.ValidateQueryParameters(term); err != nil {
-		log.ErrorCtx(ctx, errors.WithMessage(err, "search Courses endpoint: failed query parameter validation"), logData)
-
-		Error(ctx, w, err)
-		return
+	if errorObject := page.ValidateQueryParameters(term); errorObject != nil {
+		errorObjects = append(errorObjects, errorObject...)
 	}
 
 	logData["limit"] = page.Limit
@@ -74,38 +61,40 @@ func (api *SearchAPI) SearchCourses(w http.ResponseWriter, r *http.Request) {
 
 	newFilters := make(map[string]string)
 	if filters != "" {
-		// Validate filters
-		newFilters, err = models.ValidateFilters(filters)
-		if err != nil {
-			log.ErrorCtx(ctx, errors.WithMessage(err, "search Courses endpoint: failed filter validation"), logData)
+		var filterErrorObject []*models.ErrorObject
 
-			Error(ctx, w, err)
-			return
+		// Validate filters
+		newFilters, filterErrorObject = models.ValidateFilters(filters)
+		if filterErrorObject != nil {
+			errorObjects = append(errorObjects, filterErrorObject...)
 		}
 	}
 
 	var newCountries []string
 	if countries != "" {
-		// Validate filter by countries
-		newCountries, err = models.ValidateCountries(countries)
-		if err != nil {
-			log.ErrorCtx(ctx, errors.WithMessage(err, "search Courses endpoint: failed validation on country filters"), logData)
+		var countryErrorObject []*models.ErrorObject
 
-			Error(ctx, w, err)
-			return
+		// Validate filter by countries
+		newCountries, countryErrorObject = models.ValidateCountries(countries)
+		if countryErrorObject != nil {
+			errorObjects = append(errorObjects, countryErrorObject...)
 		}
 	}
 
 	var newLengthOfCourse []string
 	if lengthOfCourse != "" {
-		// Validate filter by length of course
-		newLengthOfCourse, err = models.ValidateLengthOfCourse(lengthOfCourse)
-		if err != nil {
-			log.ErrorCtx(ctx, errors.WithMessage(err, "search Courses endpoint: failed validation on length of course filters"), logData)
+		var lengthOfCourseErrorObject []*models.ErrorObject
 
-			Error(ctx, w, err)
-			return
+		// Validate filter by length of course
+		newLengthOfCourse, lengthOfCourseErrorObject = models.ValidateLengthOfCourse(lengthOfCourse)
+		if lengthOfCourseErrorObject != nil {
+			errorObjects = append(errorObjects, lengthOfCourseErrorObject...)
 		}
+	}
+
+	if errorObjects != nil {
+		ErrorResponse(ctx, w, http.StatusBadRequest, &models.ErrorResponse{Errors: errorObjects})
+		return
 	}
 
 	institutionList := strings.Split(institutions, ",")

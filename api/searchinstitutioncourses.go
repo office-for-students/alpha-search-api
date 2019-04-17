@@ -56,10 +56,8 @@ func (api *SearchAPI) SearchInstitutionCourses(w http.ResponseWriter, r *http.Re
 		Offset:            offset,
 	}
 
-	if err := page.ValidateQueryParameters(term); err != nil {
-		log.ErrorCtx(ctx, errors.WithMessage(err, "search Institution courses endpoint: failed query parameter validation"), logData)
-
-		Error(ctx, w, err)
+	if errorObjects := page.ValidateQueryParameters(term); errorObjects != nil {
+		ErrorResponse(ctx, w, http.StatusBadRequest, &models.ErrorResponse{Errors: errorObjects})
 		return
 	}
 

@@ -36,14 +36,24 @@ func (e *ErrorObject) Values() map[string]string {
 
 // A list of error messages for Dataset API
 var (
-	ErrBadFilter              = errors.New("bad filter term")
+	ErrLimitWrongType           = errors.New("limit value needs to be a number")
+	ErrNegativeLimit            = errors.New("limit needs to be a positive number, limit cannot be lower than 0")
+	ErrOffsetWrongType          = errors.New("offset value needs to be a number")
+	ErrNegativeOffset           = errors.New("offset needs to be a positive number, offset cannot be lower than 0")
+	ErrMultipleModes            = errors.New("cannot have both part-time and full-time filters set")
+	ErrInvalidFilter            = errors.New("invalid filters")
+	ErrDuplicateFilters         = errors.New("use of the same filter option more than once")
+	ErrInvalidCountry           = errors.New("invalid countries")
+	ErrLengthOfCourseWrongType  = errors.New("length_of_course values needs to be a number")
+	ErrLengthOfCourseOutOfRange = errors.New("length_of_course values needs to be numbers between the range of 1 and 7")
+	ErrEmptySearchTerm          = errors.New("empty search term")
+
 	ErrCourseNotFound         = errors.New("course not found")
 	ErrIndexNotFound          = errors.New("search index not found")
 	ErrInstitutionNotFound    = errors.New("institution not found")
 	ErrInternalServer         = errors.New("internal server error")
 	ErrMarshallingQuery       = errors.New("failed to marshal query to bytes for request body to send to elastic")
 	ErrParsingQueryParameters = errors.New("failed to parse query parameters, values must be an integer")
-	ErrEmptySearchTerm        = errors.New("empty search term")
 	ErrUnmarshallingJSON      = errors.New("failed to parse json body")
 	ErrUnexpectedStatusCode   = errors.New("unexpected status code from elastic api")
 
