@@ -1,0 +1,313 @@
+openapi: 3.0.0
+info:
+  title: Search API
+  description: "API provides access to searching courses"
+  version: 1.0.0
+  license:
+    name: ""
+    url: ""
+paths:
+  /search/courses:
+    get:
+      summary: "Returns a list of people"
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/query'
+        - $ref: '#/components/parameters/filters'
+        - $ref: '#/components/parameters/institutions'
+        - $ref: '#/components/parameters/countries'
+      responses:
+        200:
+          description: "Returns a list of all relevant courses based on the query term and filters"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/courses'
+        400:
+          $ref: '#/components/responses/InvalidRequestError'
+        500:
+          $ref: '#/components/responses/InternalError'
+components:
+  schemas:
+    courses:
+      description: "A list of course search results; list is returned by relevance of query term, if the scoring for multiple course documents is the same than the courses are sorted alphabetically."
+      required: [
+        items
+        limit
+        number_of_items
+        offset
+        total_results
+      ]
+      type: object
+      properties:
+        items:
+          $ref: '#/components/schemas/course'
+        limit:
+          description: "The number of search items returned per page."
+          type: string
+        number_of_items:
+          description: "The number of items returned in items array. Increase the limit to return more items up to a maximum of 1000, (default is 20)."
+          type: string
+        offset:
+          description: "The number of items skipped before starting to collect the result set."
+          type: string
+        total_results:
+          description: "The number of results available to page through using the offset and limit query parameters."
+          type: string
+    course:
+      description: "The course information"
+      required: [
+        country
+        distance_learning
+        english_title
+        foundation_year
+        honours_award
+        institution
+        kis_course_id
+        length_of_course
+        link
+        mode
+        qualificatuon
+        sandwich_year
+        year_abroad
+      ]
+      type: object
+      properties:
+        country:
+          description: "The Country of provider for course."
+          type: string
+          enum: [
+            England
+            Northern Ireland
+            Scotland
+            Wales
+          ]
+        distance_learning:
+          description: "The code representing whether the course is offered wholly through distance learning."
+          type: string
+        english_title:
+          description: "An english version of the title given by institution."
+          type: string
+        foundation_year:
+          description: "The availability of a foundation year."
+          type: string
+        honours_award: 
+          description: "Describes whether the course aim, on successful completion, would result in an honours (Hons) degree."
+          type: string
+        institution:
+          $ref: '#/components/schemas/institution'
+        kis_course_id:
+          description: "An identifier which uniquely identifies a course within a provider."
+          type: string
+        length_of_course:
+          description: "The total number of stages for the course."
+          type: string
+        link:
+          description: "A link to the course page"
+          type: string
+        location:
+          $ref: '#/components/schemas/location'
+        mode:
+          description: "Indicator to represent if a course is advertised as full-time, part-time or both."
+          type: string
+        qualification:
+          $ref: '#/components/schemas/qualification'
+        sandwich_year:
+          description: "The availability of a sandwich year/work placement."
+          type: string
+        welsh_title:
+          description: "A welsh version of the title given by institution."
+          type: string
+        year_abroad:
+          description: "The availability of a year abroad."
+          type: string
+    institution:
+      description: "An object containing information on the teaching UK provider."
+      required: [
+        public_ukprn_name,
+        public_ukprn,
+        ukprn_name,
+        ukprn
+      ]
+      type: object
+      properties:
+        public_ukprn_name:
+          description: "The name of the publication UK provider for where the course is primarily taught."
+          type: string
+        public_ukprn:
+          description: "Publication UK provider reference number for where the course is primarily taught. Known as 'PUBUKPRN' across csvs."
+          type: string
+        ukprn_name:
+          description: "The name of the UK provider registered on the UK Register of Learning Providers (UKRLP)."
+          type: string
+        ukprn:
+          description: "UK provider reference number, which is the unique identifier allocated to providers by the UK Register of Learning Providers (UKRLP). Known as 'UKPRN' across csvs."
+          type: string
+    location:
+      description: "Sub document containing information on course location."
+      required: [
+        latitude,
+        longitude
+      ]
+      type: object
+      properties:
+        latitude:
+          description: "Latitude reference point for the teaching location."
+          type: string
+        longitude:
+          description: "Longitude reference point for the teaching location."
+          type: string
+    qualification:
+      description: "Further details of the qualification of course."
+      required: [
+        code,
+        label,
+        level,
+        name
+      ]
+      type: object
+      properties:
+        code:
+          description: "The code referencing course qualification. Known as 'KISAIM' in KIS course csv."
+          type: string
+          example: "021"
+        label:
+          description: "The short name (alias) of the course qualification."
+          type: string
+          example: "BSc"
+        level:
+          description: "The qualificatin level for course."
+          type: string
+          enum: [
+            "F",
+            "U"
+          ]
+        name:
+          description: "The long name of the course qualification."
+          type: string
+          example: "Bachelor of Science"
+    errorResponse:
+      description: "The error response body, contains specific details of why the request failed"
+      type: object
+      properties:
+        errors:
+          description: "A list of errors found for request"
+          type: array
+          items:
+            type: object
+            properties:
+              error:
+                description: "An error being returned for request"
+                type: string
+              error_values:
+                description: "A collection of request key/value pairs which resulted in error."
+                type: array
+                items:
+                  type: object
+                  properties:
+                    <key>:
+                      description: ""
+                      type: string
+  parameters:
+    limit:
+      description: "The numbers of items to return"
+      in: query
+      name: limit
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 1000
+        default: 20
+    offset:
+      description: "The number of items to skip before starting to collect the result set"
+      in: query
+      name: offset
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    query:
+      description: "The search query term"
+      in: query
+      name: q
+      required: false
+      schema:
+        type: string
+    countries:
+      description: |
+        A commar separated list of countries' to filter by. Only the following enumerations are filterable (case insensitive):
+          * england
+          * northern_ireland
+          * wales
+          * scotland
+        
+        If an enumerated value in the list has a prefixed character of '-', this operator represents the 'countries' must not be equal to value next to the operators
+      example: "Wales,-northern_ireland"
+      in: query
+      name: countries
+      required: false
+      schema:
+        type: string
+    institutions:
+      description: |
+        A commar separated list of institutions' to filter by. Only institutions which directly match the stored values will be returned ignoring casing
+      example: "Didsbury Manchester,Roehampton University"
+      in: query
+      name: instiutions
+      required: false
+      schema:
+        type: string
+    filters:
+      description: |
+        A commar separated list of filters' to filter all courses by. Only the following enumerations are filterable (case insensitive):
+          * part_time
+          * full_time
+          * distance_learning
+          * honours_award
+          * foundation_year
+          * sandwich_year
+          * year_abroad
+        
+        If an enumerated value in the list has a prefixed character of '-', this operator represents the 'filter' must not be equal to value next to the operators
+      example: "Part_time,-sandwich_year"
+      in: query
+      name: filters
+      required: false
+      schema:
+        type: string
+  responses:
+    ConflictError:
+      description: "Failed to process the request due to a conflict"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+    ForbiddenError:
+      description: "The request is forbidden"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+    InternalError:
+      description: "Failed to process the request due to an internal error"
+    InvalidRequestError:
+      description: "Failed to process the request due to invalid request"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+    ResourceNotFound:
+      description: "The resource was not found"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+    UnauthorisedError:
+      description: "The token provided is unauthorised to carry out this operation"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'

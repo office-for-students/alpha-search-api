@@ -37,7 +37,7 @@ type Highlight struct {
 // CoursesSearchResults represents a structure for a list of returned objects
 type CoursesSearchResults struct {
 	TotalResults int        `json:"total_results"`
-	Count        int        `json:"count"`
+	Count        int        `json:"number_of_items"`
 	Items        []Document `json:"items"`
 	Limit        int        `json:"limit"`
 	Offset       int        `json:"offset"`
