@@ -132,7 +132,7 @@ func buildSearchQuery(term string, limit, offset int, filters map[string]string,
 					query.Query.Bool.Filter,
 					Filters{
 						Terms: Terms{
-							FoundationYearAvailable: []string{"1", "2"},
+							FoundationYearAvailable: []string{"Optional", "Compulsory"},
 						},
 					},
 				)
@@ -141,7 +141,7 @@ func buildSearchQuery(term string, limit, offset int, filters map[string]string,
 					query.Query.Bool.Filter,
 					Filters{
 						Terms: Terms{
-							FoundationYearAvailable: []string{"0", "1"},
+							FoundationYearAvailable: []string{"Not available", "Optional"},
 						},
 					},
 				)
@@ -154,7 +154,7 @@ func buildSearchQuery(term string, limit, offset int, filters map[string]string,
 					query.Query.Bool.Filter,
 					Filters{
 						Terms: Terms{
-							HonoursAward: []string{"1"},
+							HonoursAward: []string{"Available"},
 						},
 					},
 				)
@@ -163,7 +163,7 @@ func buildSearchQuery(term string, limit, offset int, filters map[string]string,
 					query.Query.Bool.Filter,
 					Filters{
 						Terms: Terms{
-							HonoursAward: []string{"0"},
+							HonoursAward: []string{"Not available"},
 						},
 					},
 				)
@@ -176,7 +176,7 @@ func buildSearchQuery(term string, limit, offset int, filters map[string]string,
 					query.Query.Bool.Filter,
 					Filters{
 						Terms: Terms{
-							SandwichYear: []string{"1", "2"},
+							SandwichYear: []string{"Optional", "Compulsory"},
 						},
 					},
 				)
@@ -185,7 +185,7 @@ func buildSearchQuery(term string, limit, offset int, filters map[string]string,
 					query.Query.Bool.Filter,
 					Filters{
 						Terms: Terms{
-							SandwichYear: []string{"0", "1"},
+							SandwichYear: []string{"Not available", "Optional"},
 						},
 					},
 				)
@@ -198,7 +198,7 @@ func buildSearchQuery(term string, limit, offset int, filters map[string]string,
 					query.Query.Bool.Filter,
 					Filters{
 						Terms: Terms{
-							YearAbroad: []string{"1", "2"},
+							YearAbroad: []string{"Optional", "Compulsory"},
 						},
 					},
 				)
@@ -207,7 +207,7 @@ func buildSearchQuery(term string, limit, offset int, filters map[string]string,
 					query.Query.Bool.Filter,
 					Filters{
 						Terms: Terms{
-							YearAbroad: []string{"0", "1"},
+							YearAbroad: []string{"Not available", "Optional"},
 						},
 					},
 				)
@@ -220,7 +220,7 @@ func buildSearchQuery(term string, limit, offset int, filters map[string]string,
 					query.Query.Bool.Filter,
 					Filters{
 						Terms: Terms{
-							Mode: []string{"2"},
+							Mode: []string{"Part-time"},
 						},
 					},
 				)
@@ -229,7 +229,7 @@ func buildSearchQuery(term string, limit, offset int, filters map[string]string,
 					query.Query.Bool.Filter,
 					Filters{
 						Terms: Terms{
-							Mode: []string{"1"},
+							Mode: []string{"Full-time"},
 						},
 					},
 				)
@@ -242,7 +242,7 @@ func buildSearchQuery(term string, limit, offset int, filters map[string]string,
 					query.Query.Bool.Filter,
 					Filters{
 						Terms: Terms{
-							Mode: []string{"1"},
+							Mode: []string{"Full-time"},
 						},
 					},
 				)
@@ -251,7 +251,7 @@ func buildSearchQuery(term string, limit, offset int, filters map[string]string,
 					query.Query.Bool.Filter,
 					Filters{
 						Terms: Terms{
-							Mode: []string{"2"},
+							Mode: []string{"Part-time"},
 						},
 					},
 				)

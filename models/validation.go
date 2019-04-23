@@ -129,13 +129,13 @@ func checkCountryIsValid(country string) (string, error) {
 	var countryCode string
 	switch c {
 	case "england":
-		countryCode = "1"
+		countryCode = "XF"
 	case "northern_ireland":
-		countryCode = "2"
+		countryCode = "XG"
 	case "scotland":
-		countryCode = "3"
+		countryCode = "XH"
 	case "wales":
-		countryCode = "4"
+		countryCode = "XI"
 	default:
 		return "", errs.ErrInvalidCountry
 	}
@@ -147,10 +147,10 @@ func convert(mustNotHaveCountries []string) []string {
 	var mustHaveCountries []string
 
 	countries := make(map[string]bool)
-	countries["1"] = true
-	countries["2"] = true
-	countries["3"] = true
-	countries["4"] = true
+	countries["XF"] = true
+	countries["XG"] = true
+	countries["XH"] = true
+	countries["XI"] = true
 
 	for _, country := range mustNotHaveCountries {
 		countries[country] = false

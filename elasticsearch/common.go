@@ -75,7 +75,7 @@ type Filters struct {
 // Terms represents a list of terms that are filterable
 type Terms struct {
 	Country                 []string `json:"doc.country_code.keyword,omitempty"`
-	DistanceLearning        []string `json:"doc.distance_learning.keyword,omitempty"`
+	DistanceLearning        []string `json:"doc.distance_learning_code.keyword,omitempty"`
 	FoundationYearAvailable []string `json:"doc.foundation_year.keyword,omitempty"`
 	HonoursAward            []string `json:"doc.honours_award.keyword,omitempty"`
 	Institutions            []string `json:"doc.institution.lc_ukprn_name.keyword,omitempty"`
