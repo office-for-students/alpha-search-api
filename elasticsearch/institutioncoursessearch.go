@@ -56,8 +56,8 @@ func buildInstitutionSearchQuery(term string) *Body {
 	englishTitle := make(map[string]string)
 	welshTitle := make(map[string]string)
 
-	englishTitle["doc.english_title"] = term
-	welshTitle["doc.welsh_title"] = term
+	englishTitle["doc.english_title.raw"] = term
+	welshTitle["doc.welsh_title.raw"] = term
 
 	englishTitleMatch := Match{
 		Match: englishTitle,
@@ -67,18 +67,6 @@ func buildInstitutionSearchQuery(term string) *Body {
 		Match: welshTitle,
 	}
 
-	sortbyScore := Order{
-		Order: "desc",
-	}
-
-	sortbyInstitutionName := Order{
-		Order: "asc",
-	}
-
-	sortOrders := make(map[string]Order)
-	sortOrders["_score"] = sortbyScore
-	sortOrders["institution.ukprn_name"] = sortbyInstitutionName
-
 	query := &Body{
 		Size: 3500,
 		Query: Query{
@@ -87,9 +75,13 @@ func buildInstitutionSearchQuery(term string) *Body {
 					englishTitleMatch,
 					welshTitleMatch,
 				},
+				MimimumShouldMatch: 1,
 			},
 		},
-		Sort: sortOrders,
+		Sort: []Criteria{{
+			Score:           "asc",
+			InstitutionName: "asc",
+		}},
 	}
 
 	return query

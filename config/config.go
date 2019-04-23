@@ -20,6 +20,7 @@ type Configuration struct {
 type ElasticSearchConfig struct {
 	DestURL        string `envconfig:"ES_DESTINATION_URL"`
 	DestIndex      string `envconfig:"ES_DESTINATION_INDEX"`
+	ShowScore      bool   `envconfig:"ES_SHOW_SCORE"`
 	SignedRequests bool   `envconfig:"ES_SIGNED_REQUESTS"`
 }
 
@@ -39,6 +40,7 @@ func Get() (*Configuration, error) {
 		ElasticSearchConfig: &ElasticSearchConfig{
 			DestURL:        "http://localhost:9200",
 			DestIndex:      "courses",
+			ShowScore:      false,
 			SignedRequests: true,
 		},
 	}

@@ -26,6 +26,7 @@ type SearchAPI struct {
 	Host              string
 	Index             string
 	Router            *mux.Router
+	ShowScore         bool
 }
 
 // CreateSearchAPI manages all the routes configured to API
@@ -58,6 +59,7 @@ func Routes(cfg config.Configuration, elasticsearch Elasticsearcher, router *mux
 		Host:              host,
 		Index:             cfg.ElasticSearchConfig.DestIndex,
 		Router:            router,
+		ShowScore:         cfg.ElasticSearchConfig.ShowScore,
 	}
 
 	api.Router.HandleFunc("/search/courses", api.SearchCourses).Methods("GET")

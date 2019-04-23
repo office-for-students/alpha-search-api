@@ -50,6 +50,8 @@ type SearchResult struct {
 
 // Document is the nested document in single search result
 type Document struct {
+	Score            float64         `json:"score,omitempty"`
+	SortName         string          `json:"institution_name,omitempty"`
 	KISCourseID      string          `json:"kis_course_id"`
 	EnglishTitle     string          `json:"english_title"`
 	Country          string          `json:"country"`

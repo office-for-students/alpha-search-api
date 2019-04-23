@@ -73,13 +73,6 @@ func buildSearchQuery(term string, limit, offset int, filters map[string]string,
 		Match: welshTitle,
 	}
 
-	sortbyScore := Order{
-		Order: "desc",
-	}
-
-	sortOrders := make(map[string]Order)
-	sortOrders["_score"] = sortbyScore
-
 	query := &Body{
 		From: offset,
 		Size: limit,
@@ -90,15 +83,19 @@ func buildSearchQuery(term string, limit, offset int, filters map[string]string,
 		},
 		Query: Query{
 			Bool: Bool{
-				Must: []Match{
-					englishTitleMatch,
-				},
 				Should: []Match{
+					englishTitleMatch,
 					welshTitleMatch,
 				},
+				MimimumShouldMatch: 1,
 			},
 		},
-		Sort: sortOrders,
+		Sort: []Criteria{
+			{
+				InstitutionName: "asc",
+				Score:           "desc",
+			},
+		},
 	}
 
 	if len(filters) > 0 || len(countries) > 0 {
@@ -107,7 +104,6 @@ func buildSearchQuery(term string, limit, offset int, filters map[string]string,
 
 	for key, value := range filters {
 
-		// Not working as expected?
 		if key == "distance_learning" {
 			if value == "true" {
 				query.Query.Bool.Filter = append(

@@ -14,6 +14,7 @@ type Institution struct {
 	PublicUKPRNName string     `json:"public_ukprn_name"`
 	UKPRN           string     `json:"ukprn"`
 	UKPRNName       string     `json:"ukprn_name"`
+	LCUKPRNName     string     `json:"lc_ukprn_name"`
 	Courses         []Document `json:"courses,omitempty"`
 }
 

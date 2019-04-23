@@ -97,7 +97,7 @@ func (api *SearchAPI) SearchCourses(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	institutionList := strings.Split(institutions, ",")
+	institutionList := strings.Split(strings.ToLower(institutions), ",")
 
 	log.InfoCtx(ctx, "search Courses endpoint: just before querying search index", logData)
 	// Search for courses in elasticsearch
@@ -120,6 +120,12 @@ func (api *SearchAPI) SearchCourses(w http.ResponseWriter, r *http.Request) {
 		result = getSnippets(ctx, result)
 
 		doc := result.Source.Doc
+		if api.ShowScore {
+			doc.Score = result.Score
+		} else {
+			doc.SortName = ""
+			doc.Institution.LCUKPRNName = ""
+		}
 		searchResults.Items = append(searchResults.Items, doc)
 	}
 

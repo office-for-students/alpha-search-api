@@ -31,11 +31,16 @@ func NewElasticSearchAPI(client http.Client, elasticSearchAPIURL string, signReq
 
 // Body represents the request body to elasticsearch
 type Body struct {
-	From      int              `json:"from"`
-	Size      int              `json:"size"`
-	Highlight *Highlight       `json:"highlight,omitempty"`
-	Query     Query            `json:"query"`
-	Sort      map[string]Order `json:"sort"`
+	From      int        `json:"from"`
+	Size      int        `json:"size"`
+	Highlight *Highlight `json:"highlight,omitempty"`
+	Query     Query      `json:"query"`
+	Sort      []Criteria `json:"sort"`
+}
+
+type Criteria struct {
+	Score           string `json:"_score,omitempty"`
+	InstitutionName string `json:"doc.institution_name.keyword,omitempty"`
 }
 
 // Highlight represents parts of the fields that matched
@@ -56,9 +61,10 @@ type Query struct {
 
 // Bool represents the desirable goals for query
 type Bool struct {
-	Must   []Match   `json:"must,omitempty"`
-	Should []Match   `json:"should,omitempty"`
-	Filter []Filters `json:"filter,omitempty"`
+	Must               []Match   `json:"must,omitempty"`
+	Should             []Match   `json:"should,omitempty"`
+	Filter             []Filters `json:"filter,omitempty"`
+	MimimumShouldMatch int       `json:"minimum_should_match,omitempty"`
 }
 
 // Filters represents a list of items that are filterable
@@ -68,15 +74,15 @@ type Filters struct {
 
 // Terms represents a list of terms that are filterable
 type Terms struct {
-	Country                 []string `json:"doc.country_code,omitempty"`
-	DistanceLearning        []string `json:"doc.distance_learning,omitempty"`
-	FoundationYearAvailable []string `json:"doc.foundation_year,omitempty"`
-	HonoursAward            []string `json:"doc.honours_award,omitempty"`
-	Institutions            []string `json:"doc.institution.ukprn_name,omitempty"`
-	LengthOfCourse          []string `json:"doc.length_of_course,omitempty"`
-	Mode                    []string `json:"doc.mode,omitempty"`
-	SandwichYear            []string `json:"doc.sandwich_year,omitempty"`
-	YearAbroad              []string `json:"doc.year_abroad,omitempty"`
+	Country                 []string `json:"doc.country_code.keyword,omitempty"`
+	DistanceLearning        []string `json:"doc.distance_learning.keyword,omitempty"`
+	FoundationYearAvailable []string `json:"doc.foundation_year.keyword,omitempty"`
+	HonoursAward            []string `json:"doc.honours_award.keyword,omitempty"`
+	Institutions            []string `json:"doc.institution.lc_ukprn_name.keyword,omitempty"`
+	LengthOfCourse          []string `json:"doc.length_of_course.keyword,omitempty"`
+	Mode                    []string `json:"doc.mode.keyword,omitempty"`
+	SandwichYear            []string `json:"doc.sandwich_year.keyword,omitempty"`
+	YearAbroad              []string `json:"doc.year_abroad.keyword,omitempty"`
 }
 
 // Match represents the fields that the term should or must match within query
@@ -86,7 +92,7 @@ type Match struct {
 
 // Order contains the ordering (ascending or descending) on a particular field
 type Order struct {
-	Order string `json:"order"`
+	Order string `json:"order,omitempty"`
 }
 
 // CallElastic builds a request to elastic search based on the method, path and payload
@@ -134,7 +140,6 @@ func (api *API) CallElastic(ctx context.Context, path, method string, payload in
 		log.ErrorCtx(ctx, errors.WithMessage(err, "failed to read response body from call to elastic"), logData)
 		return nil, resp.StatusCode, err
 	}
-	logData["json_body"] = string(jsonBody)
 
 	if resp.StatusCode < http.StatusOK || resp.StatusCode >= 300 {
 		log.ErrorCtx(ctx, errs.ErrUnexpectedStatusCode, logData)
