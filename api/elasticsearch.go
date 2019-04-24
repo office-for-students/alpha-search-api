@@ -9,5 +9,5 @@ import (
 // Elasticsearcher - An interface used to access elasticsearch
 type Elasticsearcher interface {
 	QueryCoursesSearch(ctx context.Context, index, term string, limit, offset int, listOfFilters map[string]string, listOfCountries, listOfLengthOfCourses, institutionList []string) (*models.SearchResponse, int, error)
-	QueryInstitutionCoursesSearch(ctx context.Context, index, term string) (*models.SearchResponse, int, error)
+	QueryInstitutionCoursesSearch(ctx context.Context, index, term string, filters map[string]string, countries, lengthOfCourse, institutions []string) (*models.SearchResponse, int, error)
 }

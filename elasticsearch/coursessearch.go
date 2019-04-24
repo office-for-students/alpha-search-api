@@ -98,6 +98,12 @@ func buildSearchQuery(term string, limit, offset int, filters map[string]string,
 		},
 	}
 
+	query = addQueryFilters(query, filters, countries, lengthOfCourse, institutions)
+
+	return query
+}
+
+func addQueryFilters(query *Body, filters map[string]string, countries, lengthOfCourse, institutions []string) *Body {
 	if len(filters) > 0 || len(countries) > 0 {
 		query.Query.Bool.Filter = []Filters{}
 	}
@@ -291,6 +297,5 @@ func buildSearchQuery(term string, limit, offset int, filters map[string]string,
 			},
 		)
 	}
-
 	return query
 }

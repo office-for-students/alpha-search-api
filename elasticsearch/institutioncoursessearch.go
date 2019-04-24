@@ -11,7 +11,7 @@ import (
 )
 
 // QueryInstitutionCoursesSearch builds query as a json body to call an elasticsearch index with
-func (api *API) QueryInstitutionCoursesSearch(ctx context.Context, index, term string) (*models.SearchResponse, int, error) {
+func (api *API) QueryInstitutionCoursesSearch(ctx context.Context, index, term string, filters map[string]string, countries, lengthOfCourse, institutions []string) (*models.SearchResponse, int, error) {
 	response := &models.SearchResponse{}
 
 	path := api.url + "/" + index + "/_search"
@@ -20,7 +20,7 @@ func (api *API) QueryInstitutionCoursesSearch(ctx context.Context, index, term s
 
 	log.InfoCtx(ctx, "searching index", logData)
 
-	body := buildInstitutionSearchQuery(term)
+	body := buildInstitutionSearchQuery(term, filters, countries, lengthOfCourse, institutions)
 
 	log.InfoCtx(ctx, "searching index", log.Data{"query": body})
 
@@ -51,13 +51,13 @@ func (api *API) QueryInstitutionCoursesSearch(ctx context.Context, index, term s
 	return response, status, nil
 }
 
-func buildInstitutionSearchQuery(term string) *Body {
+func buildInstitutionSearchQuery(term string, filters map[string]string, countries, lengthOfCourse, institutions []string) *Body {
 
 	englishTitle := make(map[string]string)
 	welshTitle := make(map[string]string)
 
-	englishTitle["doc.english_title.raw"] = term
-	welshTitle["doc.welsh_title.raw"] = term
+	englishTitle["doc.english_title"] = term
+	welshTitle["doc.welsh_title"] = term
 
 	englishTitleMatch := Match{
 		Match: englishTitle,
@@ -79,10 +79,12 @@ func buildInstitutionSearchQuery(term string) *Body {
 			},
 		},
 		Sort: []Criteria{{
-			Score:           "asc",
 			InstitutionName: "asc",
+			Score:           "desc",
 		}},
 	}
+
+	query = addQueryFilters(query, filters, countries, lengthOfCourse, institutions)
 
 	return query
 }

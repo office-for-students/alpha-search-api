@@ -58,7 +58,7 @@ type Document struct {
 	DistanceLearning string          `json:"distance_learning,omitempty"`
 	FoundationYear   string          `json:"foundation_year"`
 	HonoursAward     string          `json:"honours_award"`
-	Institution      *Institution    `json:"institution"`
+	Institution      *Institution    `json:"institution,omitempty"`
 	LengthOfCourse   string          `json:"length_of_course"`
 	Link             string          `json:"link"`
 	Location         *LocationObject `json:"location,omitempty"`
@@ -67,6 +67,7 @@ type Document struct {
 	NHSFunded        string          `json:"nhs_funded,omitempty"`
 	Qualification    *Qualification  `json:"qualification,omitempty"`
 	SandwichYear     string          `json:"sandwich_year,omitempty"`
+	WelshTitle       string          `json:"welsh_title,omitempty"`
 	YearAbroad       string          `json:"year_abroad,omitempty"`
 }
 

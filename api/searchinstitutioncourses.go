@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"strconv"
+	"strings"
 
 	"github.com/ONSdigital/go-ns/log"
 	errs "github.com/ofs/alpha-search-api/apierrors"
+	"github.com/ofs/alpha-search-api/helpers"
 	"github.com/ofs/alpha-search-api/models"
 	"github.com/pkg/errors"
 )
@@ -21,6 +22,11 @@ func (api *SearchAPI) SearchInstitutionCourses(w http.ResponseWriter, r *http.Re
 	var err error
 
 	term := r.FormValue("q")
+	filters := r.FormValue("filters")
+	countries := r.FormValue("countries")
+	lengthOfCourse := r.FormValue("length_of_course")
+	institutions := r.FormValue("institutions")
+
 	requestedLimit := r.FormValue("limit")
 	requestedOffset := r.FormValue("offset")
 
@@ -28,26 +34,16 @@ func (api *SearchAPI) SearchInstitutionCourses(w http.ResponseWriter, r *http.Re
 
 	log.InfoCtx(ctx, "SearchInstitutionCourses handler: attempting to get list of courses relevant to search term", logData)
 
-	limit := defaultLimit
-	if requestedLimit != "" {
-		limit, err = strconv.Atoi(requestedLimit)
-		if err != nil {
-			log.ErrorCtx(ctx, errors.WithMessage(err, "search Institution courses endpoint: request limit parameter error"), logData)
+	var errorObjects []*models.ErrorObject
 
-			Error(ctx, w, errs.ErrParsingQueryParameters)
-			return
-		}
+	limit, err := helpers.CalculateLimit(ctx, defaultLimit, api.DefaultMaxResults, requestedLimit)
+	if err != nil {
+		errorObjects = append(errorObjects, &models.ErrorObject{Error: err.Error(), ErrorValues: err.(*errs.ErrorObject).Values()})
 	}
 
-	offset := defaultOffset
-	if requestedOffset != "" {
-		offset, err = strconv.Atoi(requestedOffset)
-		if err != nil {
-			log.ErrorCtx(ctx, errors.WithMessage(err, "search Institution courses endpoint: request offset parameter error"), logData)
-
-			Error(ctx, w, errs.ErrParsingQueryParameters)
-			return
-		}
+	offset, err := helpers.CalculateOffset(ctx, requestedOffset)
+	if err != nil {
+		errorObjects = append(errorObjects, &models.ErrorObject{Error: err.Error(), ErrorValues: err.(*errs.ErrorObject).Values()})
 	}
 
 	page := &models.PageVariables{
@@ -56,17 +52,56 @@ func (api *SearchAPI) SearchInstitutionCourses(w http.ResponseWriter, r *http.Re
 		Offset:            offset,
 	}
 
-	if errorObjects := page.ValidateQueryParameters(term); errorObjects != nil {
-		ErrorResponse(ctx, w, http.StatusBadRequest, &models.ErrorResponse{Errors: errorObjects})
-		return
+	if errorObject := page.ValidateQueryParameters(term); errorObject != nil {
+		errorObjects = append(errorObjects, errorObject...)
 	}
 
 	logData["limit"] = page.Limit
 	logData["offset"] = page.Offset
 
+	newFilters := make(map[string]string)
+	if filters != "" {
+		var filterErrorObject []*models.ErrorObject
+
+		// Validate filters
+		newFilters, filterErrorObject = models.ValidateFilters(filters)
+		if filterErrorObject != nil {
+			errorObjects = append(errorObjects, filterErrorObject...)
+		}
+	}
+
+	var newCountries []string
+	if countries != "" {
+		var countryErrorObject []*models.ErrorObject
+
+		// Validate filter by countries
+		newCountries, countryErrorObject = models.ValidateCountries(countries)
+		if countryErrorObject != nil {
+			errorObjects = append(errorObjects, countryErrorObject...)
+		}
+	}
+
+	var newLengthOfCourse []string
+	if lengthOfCourse != "" {
+		var lengthOfCourseErrorObject []*models.ErrorObject
+
+		// Validate filter by length of course
+		newLengthOfCourse, lengthOfCourseErrorObject = models.ValidateLengthOfCourse(lengthOfCourse)
+		if lengthOfCourseErrorObject != nil {
+			errorObjects = append(errorObjects, lengthOfCourseErrorObject...)
+		}
+	}
+
+	if errorObjects != nil {
+		ErrorResponse(ctx, w, http.StatusBadRequest, &models.ErrorResponse{Errors: errorObjects})
+		return
+	}
+
+	institutionList := strings.Split(strings.ToLower(institutions), ",")
+
 	log.InfoCtx(ctx, "search Institution courses endpoint: just before querying search index", logData)
 	// Search for courses in elasticsearch
-	response, _, err := api.Elasticsearch.QueryInstitutionCoursesSearch(ctx, api.Index, term)
+	response, _, err := api.Elasticsearch.QueryInstitutionCoursesSearch(ctx, api.Index, term, newFilters, newCountries, newLengthOfCourse, institutionList)
 	if err != nil {
 		log.ErrorCtx(ctx, errors.WithMessage(err, "search Institution courses endpoint: failed to query elastic search index"), logData)
 
@@ -74,16 +109,22 @@ func (api *SearchAPI) SearchInstitutionCourses(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	institutions := groupCoursesByInstitution(response)
+	items := groupCoursesByInstitution(api.ShowScore, response)
 
 	searchResults := &models.InstitutionCoursesSearchResult{
-		Count:  response.Hits.Total,
-		Limit:  page.Limit,
-		Offset: page.Offset,
-		Items:  institutions,
+		Limit:        page.Limit,
+		Offset:       page.Offset,
+		TotalResults: len(items),
 	}
 
-	searchResults.Count = len(searchResults.Items)
+	if len(items) > (page.Offset + page.Limit) {
+		upper := page.Offset + page.Limit
+		searchResults.Items = items[page.Offset:upper]
+		searchResults.Count = len(searchResults.Items)
+	} else {
+		searchResults.Count = len(items)
+		searchResults.Items = items
+	}
 
 	b, err := json.Marshal(searchResults)
 	if err != nil {
@@ -97,33 +138,55 @@ func (api *SearchAPI) SearchInstitutionCourses(w http.ResponseWriter, r *http.Re
 	writeBody(ctx, w, b)
 }
 
-func groupCoursesByInstitution(response *models.SearchResponse) (institutions []models.Institution) {
-	institutionMap := make(map[string][]models.Document)
-	institutionOrder := make(map[int]string)
+func groupCoursesByInstitution(showScore bool, response *models.SearchResponse) (institutions []models.Institution) {
+	institutionCourses := make(map[string][]models.Document)
+	institutionOrder := make(map[int]models.Institution)
 
 	count := 0
 	for _, result := range response.Hits.HitList {
 		doc := result.Source.Doc
+		if showScore {
+			doc.Score = result.Score
+		}
 
-		if _, ok := institutionMap[doc.Institution.UKPRNName]; !ok {
-			institutionOrder[count] = doc.Institution.UKPRNName
+		if _, ok := institutionCourses[doc.Institution.UKPRNName]; !ok {
+			// store top level fields here
+			institutionOrder[count] = models.Institution{
+				PublicUKPRN:     doc.Institution.PublicUKPRN,
+				PublicUKPRNName: doc.Institution.PublicUKPRNName,
+				UKPRN:           doc.Institution.UKPRN,
+				UKPRNName:       doc.Institution.UKPRNName,
+			}
 			count++
 		}
+
+		UKPRNName := doc.Institution.UKPRNName
+		// TODO Remove nested institution doc from course object
+		doc.Institution = nil
 
 		// Add course to set
 		var courses []models.Document
 
-		courses = append(courses, institutionMap[doc.Institution.UKPRNName]...)
+		courses = append(courses, institutionCourses[UKPRNName]...)
 		courses = append(courses, doc)
 
-		institutionMap[doc.Institution.UKPRNName] = courses
+		institutionCourses[UKPRNName] = courses
 	}
 
-	for _, institutionName := range institutionOrder {
+	for i := 0; i < len(institutionOrder); i++ {
+		institutionName := institutionOrder[i].UKPRNName
 
 		institution := models.Institution{
-			UKPRNName: institutionName,
-			Courses:   institutionMap[institutionName],
+			PublicUKPRN:     institutionOrder[i].PublicUKPRN,
+			PublicUKPRNName: institutionOrder[i].PublicUKPRNName,
+			UKPRN:           institutionOrder[i].UKPRN,
+			UKPRNName:       institutionName,
+			Count:           len(institutionCourses[institutionName]),
+			Courses:         institutionCourses[institutionName],
+		}
+
+		if showScore {
+			institution.Score = institutionCourses[institutionName][0].Score
 		}
 
 		institutions = append(institutions, institution)
