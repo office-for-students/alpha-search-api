@@ -75,6 +75,9 @@ components:
         offset:
           description: "The number of items skipped before starting to collect the result set."
           type: integer
+        total_number_of_courses:
+          description: "The total number of courses found based on search query."
+          type: integer
         total_results:
           description: "The total number of institutions found with relevant courses matching search query."
           type: integer

@@ -112,9 +112,10 @@ func (api *SearchAPI) SearchInstitutionCourses(w http.ResponseWriter, r *http.Re
 	items := groupCoursesByInstitution(api.ShowScore, response)
 
 	searchResults := &models.InstitutionCoursesSearchResult{
-		Limit:        page.Limit,
-		Offset:       page.Offset,
-		TotalResults: len(items),
+		Limit:                page.Limit,
+		Offset:               page.Offset,
+		TotalResults:         len(items),
+		TotalNumberOfCourses: len(response.Hits.HitList),
 	}
 
 	if len(items) > (page.Offset + page.Limit) {
@@ -161,7 +162,8 @@ func groupCoursesByInstitution(showScore bool, response *models.SearchResponse) 
 		}
 
 		UKPRNName := doc.Institution.UKPRNName
-		// TODO Remove nested institution doc from course object
+
+		// Remove nested institution doc from course object
 		doc.Institution = nil
 
 		// Add course to set

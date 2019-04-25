@@ -2,11 +2,12 @@ package models
 
 // InstitutionCoursesSearchResponse represents a structure for a list of returned objects
 type InstitutionCoursesSearchResult struct {
-	Count        int           `json:"number_of_items"`
-	Items        []Institution `json:"items"`
-	Limit        int           `json:"limit"`
-	Offset       int           `json:"offset"`
-	TotalResults int           `json:"total_results"`
+	Count                int           `json:"number_of_items"`
+	Items                []Institution `json:"items"`
+	Limit                int           `json:"limit"`
+	Offset               int           `json:"offset"`
+	TotalResults         int           `json:"total_results"`
+	TotalNumberOfCourses int           `json:"total_number_of_courses"`
 }
 
 // Institution represents institution data of a single item in returned list
