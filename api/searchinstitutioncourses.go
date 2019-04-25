@@ -118,13 +118,16 @@ func (api *SearchAPI) SearchInstitutionCourses(w http.ResponseWriter, r *http.Re
 		TotalNumberOfCourses: len(response.Hits.HitList),
 	}
 
-	if len(items) > (page.Offset + page.Limit) {
+	if (page.Offset + page.Limit) < len(items) {
 		upper := page.Offset + page.Limit
 		searchResults.Items = items[page.Offset:upper]
 		searchResults.Count = len(searchResults.Items)
+	} else if page.Offset >= len(items) {
+		searchResults.Items = []models.Institution{}
+		searchResults.Count = 0
 	} else {
-		searchResults.Count = len(items)
-		searchResults.Items = items
+		searchResults.Items = items[page.Offset:len(items)]
+		searchResults.Count = len(searchResults.Items)
 	}
 
 	b, err := json.Marshal(searchResults)
