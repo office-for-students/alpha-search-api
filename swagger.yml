@@ -28,9 +28,30 @@ paths:
           $ref: '#/components/responses/InvalidRequestError'
         500:
           $ref: '#/components/responses/InternalError'
+  /search/institution-courses:
+    get:
+      summary: "Returns a list of people"
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/query'
+        - $ref: '#/components/parameters/filters'
+        - $ref: '#/components/parameters/institutions'
+        - $ref: '#/components/parameters/countries'
+      responses:
+        200:
+          description: "Returns a list of all relevant courses based on the query term and filters and grouped by institution/course provider"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/institutionCourses'
+        400:
+          $ref: '#/components/responses/InvalidRequestError'
+        500:
+          $ref: '#/components/responses/InternalError'
 components:
   schemas:
-    courses:
+    institutionCourses:
       description: "A list of course search results; list is returned by relevance of query term, if the scoring for multiple course documents is the same than the courses are sorted alphabetically."
       required: [
         items
@@ -42,7 +63,41 @@ components:
       type: object
       properties:
         items:
-          $ref: '#/components/schemas/course'
+          $ref: '#/components/schemas/institutions'
+        limit:
+          description: "The number of search items returned per page."
+          type: integer
+        number_of_items:
+          description: "The number of items returned in items array. Increase the limit to return more items up to a maximum of 1000, (default is 20)."
+          type: integer
+          maximum: 1000
+          minimum: 0
+        offset:
+          description: "The number of items skipped before starting to collect the result set."
+          type: integer
+        total_results:
+          description: "The total number of institutions found with relevant courses matching search query."
+          type: integer
+    institutions:
+      description: "A list of institutions containing a list of courses that were returned for search query."
+      type: array
+      items:
+        allOf:
+         - $ref: '#/components/schemas/institution'
+         - $ref: '#/components/schemas/coursesWithoutInstitutionObject'
+    courses:
+      description: "A list of course search results; list is returned by relevance of query term, if the scoring for multiple course documents is the same than the courses are sorted alphabetically."
+      required: [
+        courses
+        limit
+        number_of_items
+        offset
+        total_results
+      ]
+      type: object
+      properties:
+        courses:
+          $ref: '#/components/schemas/coursesWithInstitutionObject'
         limit:
           description: "The number of search items returned per page."
           type: string
@@ -53,8 +108,34 @@ components:
           description: "The number of items skipped before starting to collect the result set."
           type: string
         total_results:
-          description: "The number of results available to page through using the offset and limit query parameters."
+          description: "The total number of courses found with relevant courses matching search query."
           type: string
+    coursesWithoutInstitutionObject:
+      type: object
+      required: [
+        courses
+        number_of_courses
+      ]
+      properties:
+        courses:
+          description: "A list of courses found relevant to search query and associated with institution/course provider."
+          type: array
+          items:
+            $ref: '#/components/schemas/courseWithoutInstitutionObject'
+        number_of_courses:
+          description: "The number of courses found relevant to search query and associated with institution/course provider."
+          type: integer
+    courseWithoutInstitutionObject:
+        $ref: '#/components/schemas/course'
+    coursesWithInstitutionObject:
+      description: "A list of courses including the nested institution sub document."
+      type: array
+      items:
+        $ref: '#/components/schemas/courseWithInstitutionObject'
+    courseWithInstitutionObject:
+      allOf:
+        - $ref: '#/components/schemas/course'
+        - $ref: '#/components/schemas/courseInstitutionObject'
     course:
       description: "The course information"
       required: [
@@ -63,7 +144,6 @@ components:
         english_title
         foundation_year
         honours_award
-        institution
         kis_course_id
         length_of_course
         link
@@ -95,8 +175,6 @@ components:
         honours_award: 
           description: "Describes whether the course aim, on successful completion, would result in an honours (Hons) degree."
           type: string
-        institution:
-          $ref: '#/components/schemas/institution'
         kis_course_id:
           description: "An identifier which uniquely identifies a course within a provider."
           type: string
@@ -122,6 +200,14 @@ components:
         year_abroad:
           description: "The availability of a year abroad."
           type: string
+    courseInstitutionObject:
+      type: object
+      required: [
+        institution
+      ]
+      properties:
+        institution:
+          $ref: '#/components/schemas/institution'
     institution:
       description: "An object containing information on the teaching UK provider."
       required: [
@@ -190,10 +276,16 @@ components:
     errorResponse:
       description: "The error response body, contains specific details of why the request failed"
       type: object
+      required: [
+        errors
+      ]
       properties:
         errors:
           description: "A list of errors found for request"
           type: array
+          required: [
+            error
+          ]
           items:
             type: object
             properties:
@@ -207,11 +299,11 @@ components:
                   type: object
                   properties:
                     <key>:
-                      description: ""
+                      description: "The value of the property that caused the error."
                       type: string
   parameters:
     limit:
-      description: "The numbers of items to return"
+      description: "The number of items to return"
       in: query
       name: limit
       required: false
