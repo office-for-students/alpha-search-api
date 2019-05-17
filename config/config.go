@@ -10,7 +10,7 @@ import (
 // Configuration structure which hold information for configuring the datasetAPI
 type Configuration struct {
 	BindAddr                string        `envconfig:"BIND_ADDR"`
-	DefaultMaxResults       int           `envconfig:"Default_Max_Results"`
+	DefaultMaxResults       int           `envconfig:"DEFAULT_MAX_RESULTS"`
 	GracefulShutdownTimeout time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
 	Host                    string        `envconfig:"HOST_NAME"`
 	ElasticSearchConfig     *ElasticSearchConfig
