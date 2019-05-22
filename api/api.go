@@ -3,9 +3,9 @@ package api
 import (
 	"context"
 
-	"github.com/ONSdigital/go-ns/log"
-	"github.com/ONSdigital/go-ns/server"
 	"github.com/gorilla/mux"
+	"github.com/methods/go-methods-lib/log"
+	"github.com/methods/go-methods-lib/server"
 	"github.com/ofs/alpha-search-api/config"
 )
 

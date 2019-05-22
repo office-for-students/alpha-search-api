@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ONSdigital/go-ns/log"
+	"github.com/methods/go-methods-lib/log"
 	errs "github.com/ofs/alpha-search-api/apierrors"
 	"github.com/ofs/alpha-search-api/helpers"
 	"github.com/ofs/alpha-search-api/models"

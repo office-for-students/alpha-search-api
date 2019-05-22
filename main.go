@@ -8,7 +8,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/ONSdigital/go-ns/log"
+	"github.com/methods/go-methods-lib/log"
 	"github.com/ofs/alpha-search-api/api"
 	"github.com/ofs/alpha-search-api/config"
 	"github.com/ofs/alpha-search-api/elasticsearch"
