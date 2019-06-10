@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/ONSdigital/go-ns/log"
+	"github.com/methods/go-methods-lib/log"
 	errs "github.com/ofs/alpha-search-api/apierrors"
 	"github.com/ofs/alpha-search-api/models"
 	"github.com/pkg/errors"
@@ -79,6 +79,10 @@ func drainBody(ctx context.Context, r *http.Request) {
 }
 
 func writeBody(ctx context.Context, w http.ResponseWriter, b []byte) {
+	//Allow CORS here By * or specific origin
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
 	w.Header().Set("Content-Type", "application/json")
 	if _, err := w.Write(b); err != nil {
 		log.ErrorCtx(ctx, errors.WithMessage(err, "failed to write response body"), nil)

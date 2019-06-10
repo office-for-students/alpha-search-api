@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/ONSdigital/go-ns/log"
+	"github.com/methods/go-methods-lib/log"
 	errs "github.com/ofs/alpha-search-api/apierrors"
 	"github.com/pkg/errors"
 	awsauth "github.com/smartystreets/go-aws-auth"
