@@ -11,7 +11,7 @@ import (
 )
 
 // QueryInstitutionCoursesSearch builds query as a json body to call an elasticsearch index with
-func (api *API) QueryInstitutionCoursesSearch(ctx context.Context, index, term string, filters map[string]string, countries, lengthOfCourse, institutions []string) (*models.SearchResponse, int, error) {
+func (api *API) QueryInstitutionCoursesSearch(ctx context.Context, index, term string, filters map[string]string, countries, lengthOfCourse, institutions, subjects []string) (*models.SearchResponse, int, error) {
 	response := &models.SearchResponse{}
 
 	path := api.url + "/" + index + "/_search"
@@ -20,7 +20,7 @@ func (api *API) QueryInstitutionCoursesSearch(ctx context.Context, index, term s
 
 	log.InfoCtx(ctx, "searching index", logData)
 
-	body := buildInstitutionSearchQuery(term, filters, countries, lengthOfCourse, institutions)
+	body := buildInstitutionSearchQuery(term, filters, countries, lengthOfCourse, institutions, subjects)
 
 	log.InfoCtx(ctx, "searching index", log.Data{"query": body})
 
@@ -51,7 +51,7 @@ func (api *API) QueryInstitutionCoursesSearch(ctx context.Context, index, term s
 	return response, status, nil
 }
 
-func buildInstitutionSearchQuery(term string, filters map[string]string, countries, lengthOfCourse, institutions []string) *Body {
+func buildInstitutionSearchQuery(term string, filters map[string]string, countries, lengthOfCourse, institutions, subjects []string) *Body {
 
 	englishTitle := make(map[string]string)
 	welshTitle := make(map[string]string)
@@ -84,7 +84,7 @@ func buildInstitutionSearchQuery(term string, filters map[string]string, countri
 		}},
 	}
 
-	query = addQueryFilters(query, filters, countries, lengthOfCourse, institutions)
+	query = addQueryFilters(query, filters, countries, lengthOfCourse, institutions, subjects)
 
 	return query
 }

@@ -67,6 +67,8 @@ type Document struct {
 	NHSFunded        string          `json:"nhs_funded,omitempty"`
 	Qualification    *Qualification  `json:"qualification,omitempty"`
 	SandwichYear     string          `json:"sandwich_year,omitempty"`
+	SubjectCode      string          `json:"subject_code"`
+	SubjectName      string          `json:"subject_name"`
 	WelshTitle       string          `json:"welsh_title,omitempty"`
 	YearAbroad       string          `json:"year_abroad,omitempty"`
 }

@@ -26,6 +26,7 @@ func (api *SearchAPI) SearchCourses(w http.ResponseWriter, r *http.Request) {
 	countries := r.FormValue("countries")
 	lengthOfCourse := r.FormValue("length_of_course")
 	institutions := r.FormValue("institutions")
+	subjects := r.FormValue("subjects")
 
 	requestedLimit := r.FormValue("limit")
 	requestedOffset := r.FormValue("offset")
@@ -98,10 +99,11 @@ func (api *SearchAPI) SearchCourses(w http.ResponseWriter, r *http.Request) {
 	}
 
 	institutionList := strings.Split(strings.ToLower(institutions), ",")
+	subjectList := strings.Split(strings.ToUpper(subjects), ",")
 
 	log.InfoCtx(ctx, "search Courses endpoint: just before querying search index", logData)
 	// Search for courses in elasticsearch
-	response, _, err := api.Elasticsearch.QueryCoursesSearch(ctx, api.Index, term, page.Limit, page.Offset, newFilters, newCountries, newLengthOfCourse, institutionList)
+	response, _, err := api.Elasticsearch.QueryCoursesSearch(ctx, api.Index, term, page.Limit, page.Offset, newFilters, newCountries, newLengthOfCourse, institutionList, subjectList)
 	if err != nil {
 		log.ErrorCtx(ctx, errors.WithMessage(err, "search Courses endpoint: failed to query elastic search index"), logData)
 

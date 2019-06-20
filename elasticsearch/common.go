@@ -82,6 +82,7 @@ type Terms struct {
 	LengthOfCourse          []string `json:"doc.length_of_course.keyword,omitempty"`
 	Mode                    []string `json:"doc.mode.keyword,omitempty"`
 	SandwichYear            []string `json:"doc.sandwich_year.keyword,omitempty"`
+	SubjectCode             []string `json:"doc.subject_code.keyword,omitempty"`
 	YearAbroad              []string `json:"doc.year_abroad.keyword,omitempty"`
 }
 

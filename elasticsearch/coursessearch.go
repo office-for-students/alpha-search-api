@@ -12,7 +12,7 @@ import (
 )
 
 // QueryCoursesSearch builds query as a json body to call an elasticsearch index with
-func (api *API) QueryCoursesSearch(ctx context.Context, index, term string, limit, offset int, filters map[string]string, countries, lengthOfCourse, institutions []string) (*models.SearchResponse, int, error) {
+func (api *API) QueryCoursesSearch(ctx context.Context, index, term string, limit, offset int, filters map[string]string, countries, lengthOfCourse, institutions, subjects []string) (*models.SearchResponse, int, error) {
 	response := &models.SearchResponse{}
 
 	path := api.url + "/" + index + "/_search"
@@ -21,7 +21,7 @@ func (api *API) QueryCoursesSearch(ctx context.Context, index, term string, limi
 
 	log.InfoCtx(ctx, "searching index", logData)
 
-	body := buildSearchQuery(term, limit, offset, filters, countries, lengthOfCourse, institutions)
+	body := buildSearchQuery(term, limit, offset, filters, countries, lengthOfCourse, institutions, subjects)
 
 	log.InfoCtx(ctx, "searching index", log.Data{"query": body})
 
@@ -52,7 +52,7 @@ func (api *API) QueryCoursesSearch(ctx context.Context, index, term string, limi
 	return response, status, nil
 }
 
-func buildSearchQuery(term string, limit, offset int, filters map[string]string, countries, lengthOfCourse, institutions []string) *Body {
+func buildSearchQuery(term string, limit, offset int, filters map[string]string, countries, lengthOfCourse, institutions, subjects []string) *Body {
 	var object Object
 	highlight := make(map[string]Object)
 
@@ -98,12 +98,12 @@ func buildSearchQuery(term string, limit, offset int, filters map[string]string,
 		},
 	}
 
-	query = addQueryFilters(query, filters, countries, lengthOfCourse, institutions)
+	query = addQueryFilters(query, filters, countries, lengthOfCourse, institutions, subjects)
 
 	return query
 }
 
-func addQueryFilters(query *Body, filters map[string]string, countries, lengthOfCourse, institutions []string) *Body {
+func addQueryFilters(query *Body, filters map[string]string, countries, lengthOfCourse, institutions, subjects []string) *Body {
 	if len(filters) > 0 || len(countries) > 0 {
 		query.Query.Bool.Filter = []Filters{}
 	}
@@ -297,5 +297,17 @@ func addQueryFilters(query *Body, filters map[string]string, countries, lengthOf
 			},
 		)
 	}
+
+	if len(subjects) > 0 && subjects[0] != "" {
+		query.Query.Bool.Filter = append(
+			query.Query.Bool.Filter,
+			Filters{
+				Terms: Terms{
+					SubjectCode: subjects,
+				},
+			},
+		)
+	}
+
 	return query
 }
