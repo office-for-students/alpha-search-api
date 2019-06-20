@@ -3,8 +3,6 @@ package models
 import (
 	"errors"
 	"strconv"
-
-	errs "github.com/ofs/alpha-search-api/apierrors"
 )
 
 func ErrorMaximumOffsetReached(m int) error {
@@ -98,11 +96,11 @@ type PageVariables struct {
 func (page *PageVariables) ValidateQueryParameters(term string) []*ErrorObject {
 	var errorObjects []*ErrorObject
 
-	if term == "" {
-		termErrorValue := make(map[string](string))
-		termErrorValue["q"] = term
-		errorObjects = append(errorObjects, &ErrorObject{Error: errs.ErrEmptySearchTerm.Error(), ErrorValues: termErrorValue})
-	}
+	// if term == "" {
+	// 	termErrorValue := make(map[string](string))
+	// 	termErrorValue["q"] = term
+	// 	errorObjects = append(errorObjects, &ErrorObject{Error: errs.ErrEmptySearchTerm.Error(), ErrorValues: termErrorValue})
+	// }
 
 	if page.Offset >= page.DefaultMaxResults {
 		pagingErrorValue := make(map[string](string))

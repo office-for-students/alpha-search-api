@@ -59,20 +59,6 @@ func buildSearchQuery(term string, limit, offset int, filters map[string]string,
 	highlight["doc.english_title"] = object
 	highlight["doc.welsh_title"] = object
 
-	englishTitle := make(map[string]string)
-	welshTitle := make(map[string]string)
-
-	englishTitle["doc.english_title"] = term
-	welshTitle["doc.welsh_title"] = term
-
-	englishTitleMatch := Match{
-		Match: englishTitle,
-	}
-
-	welshTitleMatch := Match{
-		Match: welshTitle,
-	}
-
 	query := &Body{
 		From: offset,
 		Size: limit,
@@ -81,7 +67,30 @@ func buildSearchQuery(term string, limit, offset int, filters map[string]string,
 			PostTags: []string{"\u0001E"},
 			Fields:   highlight,
 		},
-		Query: Query{
+		Sort: []Criteria{
+			{
+				InstitutionName: "asc",
+				Score:           "desc",
+			},
+		},
+	}
+
+	if term != "" {
+		englishTitle := make(map[string]string)
+		welshTitle := make(map[string]string)
+
+		englishTitle["doc.english_title"] = term
+		welshTitle["doc.welsh_title"] = term
+
+		englishTitleMatch := Match{
+			Match: englishTitle,
+		}
+
+		welshTitleMatch := Match{
+			Match: welshTitle,
+		}
+
+		query.Query = Query{
 			Bool: Bool{
 				Should: []Match{
 					englishTitleMatch,
@@ -89,13 +98,7 @@ func buildSearchQuery(term string, limit, offset int, filters map[string]string,
 				},
 				MimimumShouldMatch: 1,
 			},
-		},
-		Sort: []Criteria{
-			{
-				InstitutionName: "asc",
-				Score:           "desc",
-			},
-		},
+		}
 	}
 
 	query = addQueryFilters(query, filters, countries, lengthOfCourse, institutions, subjects)

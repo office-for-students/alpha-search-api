@@ -56,20 +56,27 @@ func buildInstitutionSearchQuery(term string, filters map[string]string, countri
 	englishTitle := make(map[string]string)
 	welshTitle := make(map[string]string)
 
-	englishTitle["doc.english_title"] = term
-	welshTitle["doc.welsh_title"] = term
-
-	englishTitleMatch := Match{
-		Match: englishTitle,
-	}
-
-	welshTitleMatch := Match{
-		Match: welshTitle,
-	}
-
 	query := &Body{
 		Size: 3500,
-		Query: Query{
+		Sort: []Criteria{{
+			InstitutionName: "asc",
+			Score:           "desc",
+		}},
+	}
+
+	if term != "" {
+		englishTitle["doc.english_title"] = term
+		welshTitle["doc.welsh_title"] = term
+
+		englishTitleMatch := Match{
+			Match: englishTitle,
+		}
+
+		welshTitleMatch := Match{
+			Match: welshTitle,
+		}
+
+		query.Query = Query{
 			Bool: Bool{
 				Should: []Match{
 					englishTitleMatch,
@@ -77,11 +84,7 @@ func buildInstitutionSearchQuery(term string, filters map[string]string, countri
 				},
 				MimimumShouldMatch: 1,
 			},
-		},
-		Sort: []Criteria{{
-			InstitutionName: "asc",
-			Score:           "desc",
-		}},
+		}
 	}
 
 	query = addQueryFilters(query, filters, countries, lengthOfCourse, institutions, subjects)
