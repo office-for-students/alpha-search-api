@@ -24,8 +24,10 @@ type Institution struct {
 
 // LocationObject represents location data of a single item in returned list
 type LocationObject struct {
-	Latitude  string `json:"latitude"`
-	Longitude string `json:"longitude"`
+	EnglishName string `json:"english_name,omitempty"`
+	Latitude    string `json:"latitude"`
+	Longitude   string `json:"longitude"`
+	WelshName   string `json:"welsh_name,omitempty"`
 }
 
 // Qualification represents the qualification data of a single item in returned list
